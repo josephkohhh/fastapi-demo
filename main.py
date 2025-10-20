@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from models import Product
 
+
 app = FastAPI() # Instantiate FastAPI class
 
 products = [
