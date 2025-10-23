@@ -1,11 +1,13 @@
-# myenv\Scripts\Activate.ps1
+# myenv\Scripts\Activate.ps1 source myenv/bin/activate
 # uvicorn main:app --reload
 
 from fastapi import FastAPI
 from models import Product
-
+import database_models
+from database import engine, session
 
 app = FastAPI() # Instantiate FastAPI class
+database_models.Base.metadata.create_all(bind=engine) # Create tables in db defined in database_models.py
 
 products = [
     Product(id=1, name="Laptop", desc="Gaming Laptop", price=1200.0, qty=10),
@@ -13,9 +15,23 @@ products = [
     Product(id=3, name="Keyboard", desc="Wireless Keyboard", price=60.0, qty=5)
 ]
 
+def init_db():  # to populate data on first load
+    db = session()
+    count = db.query(database_models.Product).count()
+
+    if count == 0:
+        for product in products:
+            db.add(database_models.Product(**product.model_dump()))
+        db.commit()
+
+init_db()
+
 @app.get("/") # GET method - "/" is default homepage endpoint
 def test():
     return 'hello world!'
+
+
+
 
 @app.get('/products')
 def get_aLL_products():

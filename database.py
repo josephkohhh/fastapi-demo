@@ -1,6 +1,11 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-db_url = "postgres://postgres:P@ssw0rd@localhost:5432/fastapidemo"   
+
+load_dotenv()  # Load .env file
+db_url = os.getenv("DATABASE_URL")
+
 engine = create_engine(db_url)
-SessionLocal = sessionmaker(autocommit=False,autoflush=True,bind=engine)
+session = sessionmaker(autocommit=False,autoflush=True,bind=engine)

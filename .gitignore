@@ -12,6 +12,8 @@ venv/
 .venv/
 env/
 ENV/
+myenv/
+
 
 # Optional: Python packaging
 build/
