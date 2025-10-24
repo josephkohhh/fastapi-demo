@@ -1,72 +1,84 @@
 # myenv\Scripts\Activate.ps1 source myenv/bin/activate
 # uvicorn main:app --reload
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from models import Product
 import database_models
 from database import engine, session
+from sqlalchemy.orm import Session
 
 app = FastAPI() # Instantiate FastAPI class
 database_models.Base.metadata.create_all(bind=engine) # Create tables in db defined in database_models.py
 
-products = [
-    Product(id=1, name="Laptop", desc="Gaming Laptop", price=1200.0, qty=10),
-    Product(id=2, name="Mouse", desc="Wireless Mouse", price=25.5, qty=50),
-    Product(id=3, name="Keyboard", desc="Wireless Keyboard", price=60.0, qty=5)
-]
+# products = [
+#     Product(id=1, name="Laptop", desc="Gaming Laptop", price=1200.0, qty=10),
+#     Product(id=2, name="Mouse", desc="Wireless Mouse", price=25.5, qty=50),
+#     Product(id=3, name="Keyboard", desc="Wireless Keyboard", price=60.0, qty=5)
+# ]
 
-def init_db():  # to populate data on first load
+def get_db():
     db = session()
-    count = db.query(database_models.Product).count()
+    try:
+        yield db
+    finally:
+        db.close()
 
-    if count == 0:
-        for product in products:
-            db.add(database_models.Product(**product.model_dump()))
-        db.commit()
 
-init_db()
+# def init_db():  # to populate data on first load
+#     db = session()
+#     count = db.query(database_models.Product).count()
+
+#     if count == 0:
+#         for product in products:
+#             db.add(database_models.Product(**product.model_dump()))
+#         db.commit()
+
+# init_db()
 
 @app.get("/") # GET method - "/" is default homepage endpoint
 def test():
     return 'hello world!'
 
 
-
-
 @app.get('/products')
-def get_aLL_products():
-    return products
+def get_aLL_products(db: Session = Depends(get_db)):
+    db_products = db.query(database_models.Product).all()
+    return db_products
 
 @app.get('/product/{id}')
-def get_product_by_id(id: int):
-    for product in products:
-        if product.id == id:
-            return product
+def get_product_by_id(id: int, db: Session = Depends(get_db)):
+    db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+    if db_product:
+        return db_product
     return 'product not found'
 
 
 @app.post('/product')
-def add_product(product: Product):
-    products.append(product)
+def add_product(product: Product, db: Session = Depends(get_db)):
+    db.add(database_models.Product(**product.model_dump()))
+    db.commit()
     return product   
 
 
 @app.put('/product')
-def update_product(id: int, product: Product):
-    for i in range(len(products)):
-        if products[i].id == id:
-            products[i] = product
-            return 'product updated successfully'
-        
-    return 'No product found'
-
+def update_product(id: int, product: Product, db: Session = Depends(get_db)):
+    db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+    if db_product:
+        db_product.name = product.name
+        db_product.desc = product.desc
+        db_product.price = product.price
+        db_product.qty = product.qty
+        db.commit()
+    else:
+        return 'No product found'
 
 @app.delete('/product')
-def delete_product(id: int):
-    for i in range(len(products)):
-        if products[i].id == id:
-            del products[i]  # Removes by index, which is precise and faster
-            return 'product deleted successfully'
-    return 'No product found'
+def delete_product(id: int, db: Session = Depends(get_db)):
+    db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
+    if db_product:
+        db.delete(db_product)
+        db.commit()
+    else: 
+        return 'No product found'
 
 
