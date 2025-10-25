@@ -2,12 +2,23 @@
 # uvicorn main:app --reload
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
 from models import Product
 import database_models
 from database import engine, session
 from sqlalchemy.orm import Session
 
 app = FastAPI() # Instantiate FastAPI class
+
+# load_dotenv()  # Already loaded .env file in database.py so no need to load again
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.getenv("WHITELIST_URL")], # To enable whitelist url to connect to backend
+    allow_methods=["*"] # To allow CRUD methods making changes to the server
+)
+
+
 database_models.Base.metadata.create_all(bind=engine) # Create tables in db defined in database_models.py
 
 # products = [
@@ -40,12 +51,12 @@ def test():
     return 'hello world!'
 
 
-@app.get('/products')
+@app.get('/products/')
 def get_aLL_products(db: Session = Depends(get_db)):
     db_products = db.query(database_models.Product).all()
     return db_products
 
-@app.get('/product/{id}')
+@app.get('/products/{id}')
 def get_product_by_id(id: int, db: Session = Depends(get_db)):
     db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
     if db_product:
@@ -53,14 +64,14 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
     return 'product not found'
 
 
-@app.post('/product')
+@app.post('/products/')
 def add_product(product: Product, db: Session = Depends(get_db)):
     db.add(database_models.Product(**product.model_dump()))
     db.commit()
     return product   
 
 
-@app.put('/product')
+@app.put('/products/{id}')
 def update_product(id: int, product: Product, db: Session = Depends(get_db)):
     db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
     if db_product:
@@ -72,7 +83,7 @@ def update_product(id: int, product: Product, db: Session = Depends(get_db)):
     else:
         return 'No product found'
 
-@app.delete('/product')
+@app.delete('/products/{id}')
 def delete_product(id: int, db: Session = Depends(get_db)):
     db_product = db.query(database_models.Product).filter(database_models.Product.id == id).first()
     if db_product:

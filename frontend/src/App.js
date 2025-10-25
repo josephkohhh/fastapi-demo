@@ -12,9 +12,9 @@ function App() {
   const [form, setForm] = useState({
     id: "",
     name: "",
-    description: "",
+    desc: "",
     price: "",
-    quantity: "",
+    qty: "",
   });
   const [editId, setEditId] = useState(null);
   const [message, setMessage] = useState("");
@@ -92,7 +92,7 @@ function App() {
       filtered = products.filter((p) =>
         String(p.id).includes(q) ||
         p.name?.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q)
+        p.desc?.toLowerCase().includes(q)
       );
     }
     
@@ -102,7 +102,7 @@ function App() {
       let bVal = b[sortField];
       
       // Handle numeric fields
-      if (sortField === "id" || sortField === "price" || sortField === "quantity") {
+      if (sortField === "id" || sortField === "price" || sortField === "qty") {
         aVal = Number(aVal);
         bVal = Number(bVal);
       } else {
@@ -124,7 +124,7 @@ function App() {
 
   // Reset form
   const resetForm = () => {
-    setForm({ id: "", name: "", description: "", price: "", quantity: "" });
+    setForm({ id: "", name: "", desc: "", price: "", qty: "" });
     setEditId(null);
   };
 
@@ -140,7 +140,7 @@ function App() {
           ...form,
           id: Number(form.id),
           price: Number(form.price),
-          quantity: Number(form.quantity),
+          qty: Number(form.qty),
         });
         setMessage("Product updated successfully");
       } else {
@@ -148,7 +148,7 @@ function App() {
           ...form,
           id: Number(form.id),
           price: Number(form.price),
-          quantity: Number(form.quantity),
+          qty: Number(form.qty),
         });
         setMessage("Product created successfully");
       }
@@ -165,9 +165,9 @@ function App() {
     setForm({
       id: product.id,
       name: product.name,
-      description: product.description,
+      desc: product.desc,
       price: product.price,
-      quantity: product.quantity,
+      qty: product.qty,
     });
     setEditId(product.id);
     setMessage("");
@@ -214,7 +214,7 @@ function App() {
           <div className="search">
             <input
               type="text"
-              placeholder="Search by id, name or description..."
+              placeholder="Search by id, name or desc..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
@@ -244,9 +244,9 @@ function App() {
               />
               <input
                 type="text"
-                name="description"
-                placeholder="Description"
-                value={form.description}
+                name="desc"
+                placeholder="desc"
+                value={form.desc}
                 onChange={handleChange}
                 required
               />
@@ -261,9 +261,9 @@ function App() {
               />
               <input
                 type="number"
-                name="quantity"
-                placeholder="Quantity"
-                value={form.quantity}
+                name="qty"
+                placeholder="qty"
+                value={form.qty}
                 onChange={handleChange}
                 required
               />
@@ -313,7 +313,7 @@ function App() {
                       >
                         Name
                       </th>
-                      <th>Description</th>
+                      <th>desc</th>
                       <th 
                         className={`sortable ${sortField === 'price' ? `sort-${sortDirection}` : ''}`}
                         onClick={() => handleSort('price')}
@@ -321,10 +321,10 @@ function App() {
                         Price
                       </th>
                       <th 
-                        className={`sortable ${sortField === 'quantity' ? `sort-${sortDirection}` : ''}`}
-                        onClick={() => handleSort('quantity')}
+                        className={`sortable ${sortField === 'qty' ? `sort-${sortDirection}` : ''}`}
+                        onClick={() => handleSort('qty')}
                       >
-                        Quantity
+                        qty
                       </th>
                       <th>Actions</th>
                     </tr>
@@ -334,10 +334,10 @@ function App() {
                       <tr key={p.id}>
                         <td>{p.id}</td>
                         <td className="name-cell">{p.name}</td>
-                        <td className="desc-cell" title={p.description}>{p.description}</td>
+                        <td className="desc-cell" title={p.desc}>{p.desc}</td>
                         <td className="price-cell">${currency(p.price)}</td>
                         <td>
-                          <span className="qty-badge">{p.quantity}</span>
+                          <span className="qty-badge">{p.qty}</span>
                         </td>
                         <td>
                           <div className="row-actions">
